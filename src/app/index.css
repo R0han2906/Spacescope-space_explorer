@@ -1,0 +1,18 @@
+/* Smooth animations with hardware acceleration */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Force GPU acceleration for motion animations */
+[data-motion] {
+  will-change: transform;
+}
+
+/* Optimize backdrop blur */
+.backdrop-blur-xl {
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
