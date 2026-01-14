@@ -276,11 +276,11 @@ function SpaceIntelligence() {
       },
       {
         q: "Why is Mars called the Red Planet?",
-        a: "Mars appears red because its surface contains large amounts of iron oxide, commonly known as rust. Over billions of years, iron-rich minerals reacted with oxygen, covering the planet in reddish dust.",
+        a: "  Mars appears red because its surface contains large amounts of iron oxide, commonly known as rust. Over billions of years, iron-rich minerals reacted with oxygen, covering the planet in reddish dust.",
       },
       {
         q: "Which planets are believed to have diamond rain?",
-        a: "Uranus and Neptune are believed to experience diamond rain. Deep inside these ice giants, extreme pressure and temperature cause methane to break apart, allowing carbon atoms to form diamonds that fall toward the core.",
+        a: "  Uranus and Neptune are believed to experience diamond rain. Deep inside these ice giants, extreme pressure and temperature cause methane to break apart, allowing carbon atoms to form diamonds that fall toward the core.",
       },
     ],
   },
@@ -292,15 +292,15 @@ function SpaceIntelligence() {
     facts: [
       {
         q: "How hot is the Sun's core?",
-        a: "The Sun's core reaches about 15 million degrees Celsius (27 million degrees Fahrenheit). At this temperature, nuclear fusion converts hydrogen into helium, releasing enormous energy every second.",
+        a: "  The Sun's core reaches about 15 million degrees Celsius (27 million degrees Fahrenheit). At this temperature, nuclear fusion converts hydrogen into helium, releasing enormous energy every second.",
       },
       {
         q: "What is the closest star to Earth?",
-        a: "Proxima Centauri is the closest known star to Earth after the Sun, located about 4.24 light-years away. The light we see from it today actually left the star over four years ago.",
+        a: "  Proxima Centauri is the closest known star to Earth after the Sun, located about 4.24 light-years away. The light we see from it today actually left the star over four years ago.",
       },
       {
         q: "How are stars born?",
-        a: "Stars form inside giant clouds of gas and dust called nebulae. When gravity causes the material to collapse, the core heats up. Once temperatures reach about 10 million degrees Celsius, nuclear fusion begins and a star is born.",
+        a: "  Stars form inside giant clouds of gas and dust called nebulae. When gravity causes the material to collapse, the core heats up. Once temperatures reach about 10 million degrees Celsius, nuclear fusion begins and a star is born.",
       },
     ],
   },
@@ -310,17 +310,17 @@ function SpaceIntelligence() {
     title: "Cosmic Mysteries",
     color: "purple",
     facts: [
-      {
+      {  
         q: "How old is the universe?",
-        a: "The universe is approximately 13.8 billion years old. This estimate comes from observations of the cosmic microwave background radiation and measurements of how fast the universe is expanding.",
+        a: "  The universe is approximately 13.8 billion years old. This estimate comes from observations of the cosmic microwave background radiation and measurements of how fast the universe is expanding.",
       },
       {
         q: "What is dark matter?",
-        a: "Dark matter is a mysterious form of matter that does not emit or reflect light, making it invisible. It makes up about 85% of all matter in the universe and is detected through its gravitational effects on visible objects.",
+        a: "  Dark matter is a mysterious form of matter that does not emit or reflect light, making it invisible. It makes up about 85% of all matter in the universe and is detected through its gravitational effects on visible objects.",
       },
       {
-        q: "How many galaxies exist in the universe?",
-        a: "Astronomers estimate there are over 2 trillion galaxies in the observable universe, each containing millions to trillions of stars.",
+        q: "  How many galaxies exist in the universe?",
+        a: "  Astronomers estimate there are over 2 trillion galaxies in the observable universe, each containing millions to trillions of stars.",
       },
     ],
   },
@@ -332,15 +332,15 @@ function SpaceIntelligence() {
     facts: [
       {
         q: "How fast does the International Space Station travel?",
-        a: "The International Space Station travels at about 28,000 kilometers per hour (17,500 miles per hour). It completes one orbit around Earth roughly every 90 minutes.",
+        a: "  The International Space Station travels at about 28,000 kilometers per hour (17,500 miles per hour). It completes one orbit around Earth roughly every 90 minutes.",
       },
       {
         q: "How far have humans traveled from Earth?",
-        a: "The Apollo 13 crew traveled the farthest from Earth, reaching a distance of about 400,171 kilometers (248,655 miles) during their mission around the Moon.",
+        a: "  The Apollo 13 crew traveled the farthest from Earth, reaching a distance of about 400,171 kilometers (248,655 miles) during their mission around the Moon.",
       },
       {
         q: "What is the longest continuous human spaceflight?",
-        a: "Cosmonaut Valeri Polyakov holds the record for the longest continuous stay in space, spending 437 days aboard the Mir space station between 1994 and 1995.",
+        a: "  Cosmonaut Valeri Polyakov holds the record for the longest continuous stay in space, spending 437 days aboard the Mir space station between 1994 and 1995.",
       },
     ],
   },
@@ -382,10 +382,10 @@ function SpaceIntelligence() {
   const handleQuickQuestion = (question: string) => {
     setSearchQuery(question);
     const responses: Record<string, string> = {
-      "How big is the universe?": "The observable universe is about 93 billion light-years in diameter! Light from the most distant objects has been traveling for 13.8 billion years to reach us.",
-      "Can we live on Mars?": "With technology, yes! Mars has water ice, a day similar to Earth (24.6 hours), and resources to produce fuel and building materials. SpaceX aims to establish a colony by 2050!",
-      "What are black holes?": "Black holes are regions where gravity is so strong that nothing, not even light, can escape. They form when massive stars collapse, creating a singularity with infinite density!",
-      "How do rockets work?": "Rockets work by Newton's third law - for every action, there's an equal and opposite reaction. They burn fuel to shoot hot gas downward, pushing the rocket upward!",
+      "How big is the universe?": "  The observable universe is about 93 billion light-years in diameter! Light from the most distant objects has been traveling for 13.8 billion years to reach us.",
+      "Can we live on Mars?": "  With technology, yes! Mars has water ice, a day similar to Earth (24.6 hours), and resources to produce fuel and building materials. SpaceX aims to establish a colony by 2050!",
+      "What are black holes?": "  Black holes are regions where gravity is so strong that nothing, not even light, can escape. They form when massive stars collapse, creating a singularity with infinite density!",
+      "How do rockets work?": "  Rockets work by Newton's third law - for every action, there's an equal and opposite reaction. They burn fuel to shoot hot gas downward, pushing the rocket upward!",
     };
     
     const answer = responses[question] || "Exploring the cosmos... Try selecting a category above!";
