@@ -58,3 +58,10 @@ const techStack = {
     api: "None (Static Data)"
   }
 };
+
+## 🔐 Fullstack Auth + Community Backend
+
+- Frontend now includes production-style login/signup and authenticated session handling.
+- Community feed is now API-driven (MongoDB-backed) so posts created by one user are visible to all users.
+- Backend service is in `server/` with setup guide in `server/README.md`.
+- Frontend API base URL is configured via `.env` using `VITE_API_BASE_URL=http://localhost:5000`.

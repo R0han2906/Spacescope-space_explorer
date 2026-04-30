@@ -252,8 +252,10 @@ import {
   Atom,
   Telescope,
   HelpCircle,
+  Loader2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { apiRequest } from "../lib/api";
 
 // Space Intelligence Component
 function SpaceIntelligence() {
@@ -262,6 +264,8 @@ function SpaceIntelligence() {
   const [isTyping, setIsTyping] = useState(false);
   const [displayedFact, setDisplayedFact] = useState("");
   const [showResponse, setShowResponse] = useState(false);
+  const [isAskingAi, setIsAskingAi] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
 
   // Pre-written space knowledge database
   const spaceDatabase = {
@@ -379,31 +383,53 @@ function SpaceIntelligence() {
     return () => clearInterval(typeInterval);
   };
 
+  const askAi = async (question: string) => {
+    const prompt = question.trim();
+    if (!prompt) return;
+
+    setAiError(null);
+    setShowResponse(true);
+    setIsAskingAi(true);
+    setIsTyping(true);
+    setDisplayedFact("");
+
+    try {
+      const response = await apiRequest<{
+        success: boolean;
+        data: { answer: string; model: string };
+      }>("/api/ai/ask", {
+        method: "POST",
+        body: { prompt },
+      });
+
+      const answer = response.data.answer;
+      let index = 0;
+      const typeInterval = setInterval(() => {
+        if (index < answer.length) {
+          setDisplayedFact((prev) => prev + answer[index]);
+          index++;
+        } else {
+          setIsTyping(false);
+          clearInterval(typeInterval);
+        }
+      }, 12);
+    } catch (error) {
+      setAiError(error instanceof Error ? error.message : "Failed to get AI response");
+      setDisplayedFact("");
+      setIsTyping(false);
+    } finally {
+      setIsAskingAi(false);
+    }
+  };
+
   const handleQuickQuestion = (question: string) => {
     setSearchQuery(question);
-    const responses: Record<string, string> = {
-      "How big is the universe?": "  The observable universe is about 93 billion light-years in diameter! Light from the most distant objects has been traveling for 13.8 billion years to reach us.",
-      "Can we live on Mars?": "  With technology, yes! Mars has water ice, a day similar to Earth (24.6 hours), and resources to produce fuel and building materials. SpaceX aims to establish a colony by 2050!",
-      "What are black holes?": "  Black holes are regions where gravity is so strong that nothing, not even light, can escape. They form when massive stars collapse, creating a singularity with infinite density!",
-      "How do rockets work?": "  Rockets work by Newton's third law - for every action, there's an equal and opposite reaction. They burn fuel to shoot hot gas downward, pushing the rocket upward!",
-    };
-    
-    const answer = responses[question] || "Exploring the cosmos... Try selecting a category above!";
-    
-    setIsTyping(true);
-    setShowResponse(true);
-    setDisplayedFact("");
-    
-    let index = 0;
-    const typeInterval = setInterval(() => {
-      if (index < answer.length) {
-        setDisplayedFact((prev) => prev + answer[index]);
-        index++;
-      } else {
-        setIsTyping(false);
-        clearInterval(typeInterval);
-      }
-    }, 15);
+    askAi(question);
+  };
+
+  const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    askAi(searchQuery);
   };
 
   return (
@@ -437,7 +463,7 @@ function SpaceIntelligence() {
       </div>
 
       <GlassCard className="p-5 space-y-4">
-        <div className="relative">
+        <form className="relative" onSubmit={handleSearchSubmit}>
           <input
             type="text"
             value={searchQuery}
@@ -445,8 +471,18 @@ function SpaceIntelligence() {
             placeholder="Ask me anything about space..."
             className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 pr-10 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
-          <Search className="absolute right-3 top-3.5 w-5 h-5 text-white/40" />
-        </div>
+          <button
+            type="submit"
+            disabled={isAskingAi || !searchQuery.trim()}
+            className="absolute right-2 top-2 px-2 py-1 rounded bg-indigo-500/20 hover:bg-indigo-500/30 disabled:opacity-40"
+          >
+            {isAskingAi ? (
+              <Loader2 className="w-4 h-4 text-indigo-300 animate-spin" />
+            ) : (
+              <Search className="w-4 h-4 text-white/70" />
+            )}
+          </button>
+        </form>
 
         <div className="flex flex-wrap gap-2">
           {quickQuestions.map((q, i) => (
@@ -510,7 +546,11 @@ function SpaceIntelligence() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.1 }}
-                    onClick={() => handleFactSelect(fact)}
+                    onClick={() => {
+                      handleFactSelect(fact);
+                      setSearchQuery(fact.q);
+                      void askAi(fact.q);
+                    }}
                     className="w-full text-left p-2 rounded-lg bg-white/5 hover:bg-indigo-500/20 transition-all duration-200 group"
                   >
                     <div className="flex items-center gap-2">
@@ -578,6 +618,7 @@ function SpaceIntelligence() {
                         </motion.span>
                       )}
                     </p>
+                    {aiError && <p className="text-xs text-red-300 mt-2">{aiError}</p>}
                   </div>
                 </div>
               </div>

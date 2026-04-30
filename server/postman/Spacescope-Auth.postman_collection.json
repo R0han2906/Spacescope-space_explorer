@@ -1,0 +1,195 @@
+{
+  "info": {
+    "_postman_id": "53312fb2-9c0f-4e56-a8a1-1b4dce9410cf",
+    "name": "SpaceScope Auth + Community API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Manual QA collection for register/login/logout/refresh and community profile synchronization."
+  },
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "health"]
+        }
+      }
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"SpaceUserOne\",\n  \"email\": \"spaceuser1@example.com\",\n  \"password\": \"StrongPass1\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"spaceuser1@example.com\",\n  \"password\": \"StrongPass1\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{}" },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/refresh-token",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "refresh-token"]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{}" },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "logout"]
+            }
+          }
+        },
+        {
+          "name": "Logout All Sessions",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{}" },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout-all",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "logout-all"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Community",
+      "item": [
+        {
+          "name": "Get Global Posts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/community/posts?limit=100",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "community", "posts"],
+              "query": [{ "key": "limit", "value": "100" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get My Profile",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "me"]
+            }
+          }
+        },
+        {
+          "name": "Update Community Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"SpaceUserOne Updated\",\n  \"avatarUrl\": \"https://example.com/avatar.png\",\n  \"headline\": \"Astrophotography Enthusiast\",\n  \"profile\": {\n    \"bio\": \"Loves nebula captures\",\n    \"location\": \"Earth\"\n  },\n  \"community\": {\n    \"interests\": [\"astrophotography\", \"missions\"],\n    \"expertiseLevel\": \"advanced\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/community-profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "community-profile"]
+            }
+          }
+        },
+        {
+          "name": "Add Community Connection",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{targetUserId}}\",\n  \"relation\": \"following\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/connections",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "connections"]
+            }
+          }
+        },
+        {
+          "name": "Create Community Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Captured Orion Nebula tonight!\",\n  \"tags\": [\"nebula\", \"telescope\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/community-posts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "community-posts"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000" },
+    { "key": "accessToken", "value": "" },
+    { "key": "targetUserId", "value": "" }
+  ]
+}

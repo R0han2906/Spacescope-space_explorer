@@ -8,6 +8,8 @@ import { Missions } from "./components/missions";
 import { Community } from "./components/community";
 import { Profile } from "./components/profile";
 import { SplashScreen } from "./components/splash-screen";
+import { AuthPage } from "./components/auth-page";
+import { useAuth } from "./context/AuthContext";
 
 // Page Transition Wrapper Component
 function PageTransition({ children }: { children: React.ReactNode }) {
@@ -30,9 +32,22 @@ export default function App() {
   const [showSplash, setShowSplash] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
+  const { isAuthenticated, loading, logout, user } = useAuth();
 
   if (showSplash) {
     return <SplashScreen onFinish={() => setShowSplash(false)} />;
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-white/70">
+        Loading SpaceScope...
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <AuthPage />;
   }
 
   const getCurrentView = () => {
@@ -51,7 +66,12 @@ export default function App() {
 
   return (
     <div className="min-h-screen">
-      <Navigation currentView={getCurrentView()} onNavigate={handleNavigate} />
+      <Navigation
+        currentView={getCurrentView()}
+        onNavigate={handleNavigate}
+        onLogout={logout}
+        userName={user?.name || "Explorer"}
+      />
       
       {/* AnimatePresence for smooth page transitions */}
       <AnimatePresence mode="wait">

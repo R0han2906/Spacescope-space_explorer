@@ -66,9 +66,11 @@ import { motion } from "motion/react";
 interface NavigationProps {
   currentView: string;
   onNavigate: (view: string) => void;
+  onLogout: () => Promise<void>;
+  userName: string;
 }
 
-export function Navigation({ currentView, onNavigate }: NavigationProps) {
+export function Navigation({ currentView, onNavigate, onLogout, userName }: NavigationProps) {
   const navItems = [
     { id: "dashboard", label: "Dashboard", icon: Telescope },
     { id: "explore", label: "Explore", icon: Compass },
@@ -151,6 +153,15 @@ export function Navigation({ currentView, onNavigate }: NavigationProps) {
                 </button>
               );
             })}
+            <div className="hidden lg:flex items-center gap-2 ml-3 pl-3 border-l border-white/10">
+              <span className="text-xs text-white/50 max-w-28 truncate">{userName}</span>
+              <button
+                onClick={() => void onLogout()}
+                className="px-3 py-1.5 rounded-md bg-white/5 hover:bg-white/10 text-xs text-white/70"
+              >
+                Logout
+              </button>
+            </div>
           </div>
         </div>
       </div>
