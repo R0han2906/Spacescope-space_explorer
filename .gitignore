@@ -11,6 +11,18 @@ pnpm-lock.yaml
 .env.test
 .env.test.local
 .env.production.local
+**/.env
+**/.env.*
+!.env.example
+!**/.env.example
+
+# Secrets and certificates
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
 
 # Build outputs
 dist/

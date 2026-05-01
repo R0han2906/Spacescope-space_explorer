@@ -422,6 +422,10 @@ import {
   X,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import {
+  getMissionUpdates,
+  type MissionUpdateItem,
+} from "../lib/spaceflight";
 
 interface Mission {
   id: number;
@@ -598,6 +602,9 @@ export function Missions() {
   const [filter, setFilter] = useState<string>("all");
   const [missions, setMissions] = useState<Mission[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [missionUpdates, setMissionUpdates] = useState<MissionUpdateItem[]>([]);
+  const [updatesLoading, setUpdatesLoading] = useState<boolean>(true);
+  const [updatesError, setUpdatesError] = useState<string | null>(null);
 
   // Initialize missions data on component mount
   useEffect(() => {
@@ -609,6 +616,28 @@ export function Missions() {
     }, 100);
 
     return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const loadMissionUpdates = async () => {
+      setUpdatesLoading(true);
+      setUpdatesError(null);
+      try {
+        const updates = await getMissionUpdates(6);
+        setMissionUpdates(updates);
+      } catch (error) {
+        setMissionUpdates([]);
+        setUpdatesError(
+          error instanceof Error
+            ? error.message
+            : "Failed to load mission-related updates.",
+        );
+      } finally {
+        setUpdatesLoading(false);
+      }
+    };
+
+    void loadMissionUpdates();
   }, []);
 
   // Filter missions based on selected filter
@@ -644,6 +673,77 @@ export function Missions() {
         <p className="text-white/60 text-lg">
           Track humanity's journey across the cosmos
         </p>
+      </div>
+
+      {/* Mission-Related Updates */}
+      <div className="mb-8 space-y-4">
+        <div className="flex items-center gap-2">
+          <Rocket className="w-5 h-5 text-indigo-400" />
+          <h2 className="text-2xl font-semibold">Latest Mission Updates</h2>
+        </div>
+        {updatesLoading && (
+          <GlassCard className="p-5 text-white/60">
+            Loading mission-related updates...
+          </GlassCard>
+        )}
+        {!updatesLoading && updatesError && (
+          <GlassCard className="p-5 border border-red-400/30 text-red-300">
+            {updatesError}
+          </GlassCard>
+        )}
+        {!updatesLoading && !updatesError && missionUpdates.length === 0 && (
+          <GlassCard className="p-5 text-white/60">
+            No mission-related updates are available right now.
+          </GlassCard>
+        )}
+        {!updatesLoading && !updatesError && missionUpdates.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {missionUpdates.map((update, index) => (
+              <motion.div
+                key={update.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.08 }}
+              >
+                <GlassCard
+                  className="h-full overflow-hidden group cursor-pointer"
+                  onClick={() =>
+                    window.open(update.link, "_blank", "noopener,noreferrer")
+                  }
+                >
+                  <div className="h-40 overflow-hidden">
+                    <img
+                      src={update.image}
+                      alt={update.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div className="p-4">
+                    <div className="flex items-center gap-2 text-xs text-white/50 mb-2">
+                      <span>{update.dateLabel}</span>
+                      <span>•</span>
+                      <span>{update.sourceSite}</span>
+                    </div>
+                    <h3 className="font-semibold mb-2 text-white/95 group-hover:text-indigo-300 transition-colors">
+                      {update.title}
+                    </h3>
+                    <p className="text-sm text-white/65 mb-3">{update.summary}</p>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-cyan-300">
+                        {update.relatedLaunches} launches
+                      </span>
+                      <span className="text-purple-300">
+                        {update.relatedEvents} events
+                      </span>
+                      <ExternalLink className="w-3.5 h-3.5 text-white/60" />
+                    </div>
+                  </div>
+                </GlassCard>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Filters */}

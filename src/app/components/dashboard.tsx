@@ -232,7 +232,7 @@
 //   );
 // }
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GlassCard } from "./glass-card";
 import {
@@ -256,6 +256,12 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { apiRequest } from "../lib/api";
+import {
+  getLatestNews,
+  getLatestSpaceEvents,
+  type SpaceEventItem,
+  type SpaceNewsItem,
+} from "../lib/spaceflight";
 
 // Space Intelligence Component
 function SpaceIntelligence() {
@@ -1003,69 +1009,12 @@ function SpaceshipAnimation() {
 
 export function Dashboard() {
   const navigate = useNavigate();
-
- const skyEvents = [
-   {
-     name: "Lyrid Meteor Shower",
-     date: "Apr 21–22, 2026",
-     time: "Late Evening – 2:00 AM",
-     visibility: "Good",
-     description: "A reliable annual meteor shower producing around 10–20 meteors per hour. Best seen before midnight in clear skies.",
-   },
-  {
-    name: "Quadrantid Meteor Shower",
-    date: "Jan 3–4, 2026",
-    time: "12:00 AM – Dawn",
-    visibility: "Good",
-    description: "One of the strongest meteor showers of the year, producing up to ~40 meteors per hour under dark skies. Best viewed after midnight.",
-  },
-  {
-    name: "Perseid Meteor Shower Peak",
-    date: "Aug 12–13, 2026",
-    time: "10:00 PM – 4:00 AM",
-    visibility: "Excellent",
-    description: "The most popular meteor shower of the year, often producing up to 80–100 meteors per hour at peak in the Northern Hemisphere.",
-  },
-  {
-    name: "Partial Lunar Eclipse",
-    date: "Aug 28, 2026",
-    time: "Night (varies by location)",
-    visibility: "Best",
-    description: "A partial lunar eclipse where part of the Moon passes through Earth’s shadow, visible without any equipment.",
-  },
-  {
-    name: "Geminid Meteor Shower Peak",
-    date: "Dec 13–14, 2026",
-    time: "9:00 PM – 4:00 AM",
-    visibility: "Excellent",
-    description: "Considered the king of meteor showers, with up to ~120 bright meteors per hour, visible worldwide.",
-  },
-];
-
-
-  const newsItems = [
-    {
-      title: "Webb Telescope Discovers Water on Exoplanet",
-      category: "Discovery",
-      image: "https://images.unsplash.com/photo-1557264322-b44d383a2906?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400",
-      summary: "NASA's James Webb Space Telescope has detected water vapor in the atmosphere of a distant rocky exoplanet.",
-      link: "https://www.nasa.gov/mission/webb/",
-    },
-    {
-      title: "New Galaxy Cluster Reveals Dark Matter Structure",
-      category: "Research",
-      image: "https://images.unsplash.com/photo-1660244867765-f656096619af?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400",
-      summary: "Astronomers mapped the distribution of dark matter in unprecedented detail using gravitational lensing.",
-      link: "https://science.nasa.gov/universe/dark-energy-dark-matter/",
-    },
-    {
-      title: "Upcoming Comet May Be Visible to Naked Eye",
-      category: "Event",
-      image: "https://images.unsplash.com/photo-1730051316601-4c71c894e496?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400",
-      summary: "A newly discovered comet is approaching the inner solar system, promising a spectacular show.",
-      link: "https://science.nasa.gov/solar-system/comets/",
-    },
-  ];
+  const [newsItems, setNewsItems] = useState<SpaceNewsItem[]>([]);
+  const [skyEvents, setSkyEvents] = useState<SpaceEventItem[]>([]);
+  const [newsLoading, setNewsLoading] = useState(true);
+  const [eventsLoading, setEventsLoading] = useState(true);
+  const [newsError, setNewsError] = useState<string | null>(null);
+  const [eventsError, setEventsError] = useState<string | null>(null);
 
   const communitySpotlight = [
     { user: "Sarah Chen", activity: "Photographed the Orion Nebula", likes: 234, avatar: "🔭" },
@@ -1076,6 +1025,43 @@ export function Dashboard() {
   const handleContinueLearning = () => navigate("/explore");
   const handleNewsClick = (link: string) => window.open(link, "_blank", "noopener,noreferrer");
   const handleCommunityClick = () => navigate("/community");
+
+  useEffect(() => {
+    const loadDashboardFeed = async () => {
+      setNewsLoading(true);
+      setEventsLoading(true);
+      setNewsError(null);
+      setEventsError(null);
+
+      const [newsResult, eventsResult] = await Promise.allSettled([
+        getLatestNews(6),
+        getLatestSpaceEvents(5),
+      ]);
+
+      if (newsResult.status === "fulfilled") {
+        setNewsItems(newsResult.value);
+      } else {
+        setNewsItems([]);
+        setNewsError(newsResult.reason instanceof Error ? newsResult.reason.message : "Failed to load latest space news.");
+      }
+
+      if (eventsResult.status === "fulfilled") {
+        setSkyEvents(eventsResult.value);
+      } else {
+        setSkyEvents([]);
+        setEventsError(
+          eventsResult.reason instanceof Error
+            ? eventsResult.reason.message
+            : "Failed to load latest space events.",
+        );
+      }
+
+      setNewsLoading(false);
+      setEventsLoading(false);
+    };
+
+    void loadDashboardFeed();
+  }, []);
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-8 space-y-8 relative">
@@ -1140,60 +1126,78 @@ export function Dashboard() {
             >
               <Eye className="w-5 h-5 text-indigo-400" />
             </motion.div>
-            <h2 className="text-2xl font-semibold">Upcoming Sky Events</h2>
+            <h2 className="text-2xl font-semibold">Latest Space Events</h2>
           </div>
           <div className="space-y-3">
-            {skyEvents.map((event, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <GlassCard className="p-4 hover:bg-white/10 transition-all duration-300 group cursor-pointer">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-semibold text-lg group-hover:text-indigo-400 transition-colors">
-                          {event.name}
-                        </h3>
-                        <motion.div
-                          animate={{
-                            scale: [1, 1.2, 1],
-                          }}
-                          transition={{
-                            duration: 2,
-                            repeat: Infinity,
-                            delay: index * 0.5,
-                          }}
-                        >
-                          {event.visibility === "Excellent" && <span className="text-lg">🌟</span>}
-                          {event.visibility === "Best" && <span className="text-lg">✨</span>}
-                        </motion.div>
+            {eventsLoading && (
+              <GlassCard className="p-5 text-white/60">Loading latest events...</GlassCard>
+            )}
+            {!eventsLoading && eventsError && (
+              <GlassCard className="p-5 border border-red-400/30 text-red-300">
+                {eventsError}
+              </GlassCard>
+            )}
+            {!eventsLoading && !eventsError && skyEvents.length === 0 && (
+              <GlassCard className="p-5 text-white/60">
+                No event-linked updates are available right now.
+              </GlassCard>
+            )}
+            {!eventsLoading &&
+              !eventsError &&
+              skyEvents.map((event, index) => (
+                <motion.div
+                  key={event.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <GlassCard
+                    className="p-4 hover:bg-white/10 transition-all duration-300 group cursor-pointer"
+                    onClick={() => handleNewsClick(event.link)}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-semibold text-lg group-hover:text-indigo-400 transition-colors">
+                            {event.name}
+                          </h3>
+                          <motion.div
+                            animate={{
+                              scale: [1, 1.2, 1],
+                            }}
+                            transition={{
+                              duration: 2,
+                              repeat: Infinity,
+                              delay: index * 0.4,
+                            }}
+                          >
+                            {event.visibility === "Excellent" && <span className="text-lg">🌟</span>}
+                            {event.visibility === "Best" && <span className="text-lg">✨</span>}
+                          </motion.div>
+                        </div>
+                        <p className="text-sm text-white/60 mb-2">{event.summary}</p>
+                        <div className="flex flex-wrap items-center gap-3 text-sm text-white/60">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            {event.dateLabel}
+                          </span>
+                          <span>•</span>
+                          <span className="truncate">{event.sourceSite}</span>
+                        </div>
                       </div>
-                      <p className="text-sm text-white/60 mb-2">{event.description}</p>
-                      <div className="flex items-center gap-3 text-sm text-white/60">
-                        <span className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3" />
-                          {event.date}
-                        </span>
-                        <span>•</span>
-                        <span>{event.time}</span>
-                      </div>
+                      <span
+                        className={`px-3 py-1 rounded-full text-sm flex-shrink-0 ${
+                          event.visibility === "Excellent"
+                            ? "bg-green-500/20 text-green-300"
+                            : "bg-cyan-500/20 text-cyan-300"
+                        }`}
+                      >
+                        {event.visibility}
+                      </span>
                     </div>
-                    <span
-                      className={`px-3 py-1 rounded-full text-sm flex-shrink-0 ml-4 ${
-                        event.visibility === "Excellent"
-                          ? "bg-green-500/20 text-green-300"
-                          : "bg-cyan-500/20 text-cyan-300"
-                      }`}
-                    >
-                      {event.visibility}
-                    </span>
-                  </div>
-                </GlassCard>
-              </motion.div>
-            ))}
+                  </GlassCard>
+                </motion.div>
+              ))}
           </div>
         </div>
 
@@ -1274,59 +1278,75 @@ export function Dashboard() {
           <TrendingUp className="w-5 h-5 text-indigo-400" />
           <h2 className="text-2xl font-semibold">Latest Astronomy News</h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {newsItems.map((news, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <GlassCard
-                className="overflow-hidden cursor-pointer group h-full"
-                onClick={() => handleNewsClick(news.link)}
+        {newsLoading && (
+          <GlassCard className="p-5 text-white/60">Loading latest news...</GlassCard>
+        )}
+        {!newsLoading && newsError && (
+          <GlassCard className="p-5 border border-red-400/30 text-red-300">
+            {newsError}
+          </GlassCard>
+        )}
+        {!newsLoading && !newsError && newsItems.length === 0 && (
+          <GlassCard className="p-5 text-white/60">
+            No latest news available at the moment.
+          </GlassCard>
+        )}
+        {!newsLoading && !newsError && newsItems.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {newsItems.map((news, index) => (
+              <motion.div
+                key={news.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
               >
-                <div className="relative h-48 overflow-hidden">
-                  <img
-                    src={news.image}
-                    alt={news.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-                  <div className="absolute top-3 left-3">
-                    <span className="px-3 py-1 rounded-full bg-indigo-500/80 backdrop-blur-sm text-white text-xs">
-                      {news.category}
-                    </span>
-                  </div>
+                <GlassCard
+                  className="overflow-hidden cursor-pointer group h-full"
+                  onClick={() => handleNewsClick(news.link)}
+                >
+                  <div className="relative h-48 overflow-hidden">
+                    <img
+                      src={news.image}
+                      alt={news.title}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <div className="absolute top-3 left-3">
+                      <span className="px-3 py-1 rounded-full bg-indigo-500/80 backdrop-blur-sm text-white text-xs">
+                        {news.category}
+                      </span>
+                    </div>
 
-                  <motion.div
-                    className="absolute inset-0 bg-indigo-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center"
-                    initial={false}
-                  >
                     <motion.div
-                      initial={{ scale: 0 }}
-                      whileHover={{ scale: 1 }}
-                      className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center"
+                      className="absolute inset-0 bg-indigo-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center"
+                      initial={false}
                     >
-                      <ExternalLink className="w-5 h-5 text-white" />
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        whileHover={{ scale: 1 }}
+                        className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center"
+                      >
+                        <ExternalLink className="w-5 h-5 text-white" />
+                      </motion.div>
                     </motion.div>
-                  </motion.div>
-                </div>
-                <div className="p-5">
-                  <h3 className="font-semibold text-lg mb-2 group-hover:text-indigo-400 transition-colors">
-                    {news.title}
-                  </h3>
-                  <p className="text-white/60 text-sm mb-4">{news.summary}</p>
-                  <button className="text-indigo-400 text-sm flex items-center gap-1 group-hover:gap-2 transition-all">
-                    Learn More
-                    <ExternalLink className="w-3 h-3" />
-                  </button>
-                </div>
-              </GlassCard>
-            </motion.div>
-          ))}
-        </div>
+                  </div>
+                  <div className="p-5">
+                    <div className="text-xs text-white/50 mb-2">{news.dateLabel}</div>
+                    <h3 className="font-semibold text-lg mb-2 group-hover:text-indigo-400 transition-colors">
+                      {news.title}
+                    </h3>
+                    <p className="text-white/60 text-sm mb-4">{news.summary}</p>
+                    <button className="text-indigo-400 text-sm flex items-center gap-1 group-hover:gap-2 transition-all">
+                      Learn More
+                      <ExternalLink className="w-3 h-3" />
+                    </button>
+                  </div>
+                </GlassCard>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Community Spotlight */}

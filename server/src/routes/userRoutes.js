@@ -6,9 +6,11 @@ const {
   updateCommunityProfile,
   addCommunityConnection,
   createCommunityPost,
+  toggleCommunityPostLike,
+  addCommunityPostComment,
 } = require("../controllers/userController");
 const { updateCommunityProfileValidator } = require("../validators/userValidators");
-const { body } = require("express-validator");
+const { body, param } = require("express-validator");
 
 const userRouter = express.Router();
 
@@ -41,9 +43,35 @@ userRouter.post(
       .isLength({ min: 1, max: 3000 })
       .withMessage("content must be between 1 and 3000 characters"),
     body("tags").optional().isArray({ max: 20 }).withMessage("tags must be an array"),
+    body("imageUrls")
+      .optional()
+      .isArray({ max: 4 })
+      .withMessage("imageUrls must be an array with at most 4 images"),
+    body("imageUrls.*")
+      .optional()
+      .isURL()
+      .withMessage("Each image URL must be valid"),
   ],
   validateRequest,
   createCommunityPost,
+);
+userRouter.post(
+  "/community-posts/:postId/like",
+  [param("postId").isMongoId().withMessage("postId must be a valid post id")],
+  validateRequest,
+  toggleCommunityPostLike,
+);
+userRouter.post(
+  "/community-posts/:postId/comments",
+  [
+    param("postId").isMongoId().withMessage("postId must be a valid post id"),
+    body("content")
+      .trim()
+      .isLength({ min: 1, max: 1000 })
+      .withMessage("comment must be between 1 and 1000 characters"),
+  ],
+  validateRequest,
+  addCommunityPostComment,
 );
 
 module.exports = { userRouter };
